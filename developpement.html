@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Développement – Projet RISK</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Timeline ── */
+    .timeline {
+      position: relative;
+      padding: 1rem 0 1rem 2.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.6rem;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border-aged);
+      opacity: 0.5;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 0.45rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--parchment);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+
+    .timeline-date {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .timeline-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.4rem;
+    }
+
+    .timeline-body {
+      background: var(--parchment);
+      border: 1px solid var(--border-aged);
+      border-radius: 3px;
+      padding: 1rem 1.2rem;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--ink-light);
+      min-height: 3.5rem;
+      position: relative;
+    }
+
+    .timeline-body::before {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border: 1px solid rgba(156,122,69,0.18);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    /* ── Difficulty cards ── */
+    .difficulties-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+
+    .difficulty-card {
+      background: var(--parchment);
+      border: 1px solid var(--border-aged);
+      border-radius: 3px;
+      padding: 1.4rem 1.2rem;
+      position: relative;
+      box-shadow: 3px 3px 10px var(--shadow-warm);
+    }
+
+    .difficulty-card::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border: 1px solid rgba(156,122,69,0.18);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    .difficulty-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .difficulty-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .difficulty-body {
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--ink-light);
+      min-height: 3rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <a class="nav-brand" href="projet.html">⚔ Projet RISK</a>
+    <ul class="nav-links">
+      <li><a href="projet.html">Le Projet</a></li>
+      <li><a href="groupe.html">Le Groupe</a></li>
+      <li><a href="developpement.html" class="active">Développement</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-rule">✦ ✦ ✦</div>
+
+  <main class="container">
+
+    <h1>Développement</h1>
+    <h2>Chronologie & difficultés rencontrées</h2>
+
+    <div class="divider">✦</div>
+
+    <h3>Étapes du projet</h3>
+
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-date">Étape 1</div>
+        <div class="timeline-title">Analyse & conception</div>
+        <div class="timeline-body">Nous avons débuté par l'écriture du module principal objets.py pour poser les fondations de la logique Orientée Objet. Cette étape a permis de définir les entités essentielles du jeu : le lancer de dés aléatoire, le paquet de cartes RISK échangeables, la structure des Territoires (nom, propriétaire, armées) et les Continents qui les regroupent.</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Étape 2</div>
+        <div class="timeline-title">Mise en place de la structure</div>
+        <div class="timeline-body">Afin de gérer les liaisons réelles entre les 42 territoires mondiaux, nous avons implémenté un dictionnaire d'adjacence complet représentant les frontières (comme la liaison Alaska-Kamchatka). Ces coordonnées géographiques fictives et ces voisins directs forment le squelette du graphe réseau indispensable aux déplacements et aux déclarations de guerre.</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Étape 3</div>
+        <div class="timeline-title">Développement des mécaniques de jeu</div>
+        <div class="timeline-body">Cette phase s'est concentrée sur les fichiers game.py et combat.py. Nous avons codé l'algorithme officiel des combats de RISK : tri décroissant des dés des attaquants et des défenseurs, confrontation un à un, attribution des pertes militaires, et transfert automatique de propriété du territoire avec déplacement des troupes victorieuses en cas de conquête.</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Étape 4</div>
+        <div class="timeline-title">Interface & affichage</div>
+        <div class="timeline-body">Grâce à matplotlib et networkx insérés dans carte2.py, nous avons transformé le script console en un plateau visuel dynamique. Les nœuds se colorent en temps réel selon la couleur du joueur propriétaire, le nombre d'armées est floqué au centre de chaque cercle, et une image de fond de carte du monde vient habiller l'arrière-plan du repère.</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Étape 5</div>
+        <div class="timeline-title">Tests & finalisation</div>
+        <div class="timeline-body">Le fichier pivot main_guy.py orchestre désormais toute la boucle de jeu au clic de la souris. Il gère de manière séquentielle la phase de Renforcement initial, la phase d'Attaque (avec mise en surbrillance rouge du territoire sélectionné), le saut d'un joueur à un autre, et la détection finale d'un vainqueur unique possédant l'ensemble des 42 territoires mondiaux.</div>
+      </div>
+
+    </div>
+
+    <div class="divider">✦</div>
+
+    <h3>Difficultés rencontrées</h3>
+
+    <div class="difficulties-grid">
+
+      <div class="difficulty-card">
+        <span class="difficulty-icon">⚔</span>
+        <div class="difficulty-title">Difficulté 1</div>
+        <div class="difficulty-body">Problème : Une divergence entre l'utilisation de l'attribut minuscule (joueur.territoires) et majuscule (joueur.Territoires) brisait le suivi des conquêtes lors de la transition entre la console et l'interface graphique. </br>Solution : Nous avons uniformisé la casse et appliqué des boucles de synchronisation forcées à chaque résolution de combat.</div>
+      </div>
+
+      <div class="difficulty-card">
+        <span class="difficulty-icon">🗺</span>
+        <div class="difficulty-title">Difficulté 2</div>
+        <div class="difficulty-body">Problème : Recréer entièrement la figure ou relancer un affichage à chaque clic de souris ralentissait considérablement le jeu et provoquait d'importants clignotements d'écran.</br>Solution : Nous avons isolé les éléments modifiables et utilisé les méthodes set_facecolors() et draw_idle() pour ne recalculer que les couleurs et les textes modifiés.</div>
+      </div>
+
+      <div class="difficulty-card">
+        <span class="difficulty-icon">⏳</span>
+        <div class="difficulty-title">Difficulté 3</div>
+        <div class="difficulty-body">Problème : La gestion des événements de souris et la mise à jour de l'interface graphique nécessitaient une optimisation pour garantir une expérience utilisateur fluide. </br>Solution : Nous avons implémenté une architecture basée sur des callbacks pour traiter les interactions utilisateur de manière plus efficace.</div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer>
+    Université d'Angers &nbsp;·&nbsp; Projet Informatique &nbsp;·&nbsp; 2024–2025
+  </footer>
+
+</body>
+</html>
