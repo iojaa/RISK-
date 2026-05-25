@@ -1,11 +1,10 @@
-from pyclbr import Class
+import random
 
 class Dés:
     def __init__(self, nombre_faces):
         self.nombre_faces = nombre_faces
 
     def lancer(self):
-        import random
         return random.randint(1, self.nombre_faces)
 
 def lances_de_dés(nombre_lances):
@@ -36,7 +35,7 @@ def créer_cartes():
     armes = ["Fantassin", "Cavalier", "Canon"]
     for i in range (42):  # 42 territoires dans RISK
         if territoires[i] in ["Alaska", "North Africa", "Alberta", "Western US","Argentina","Egypt","Eastern Australia",
-                              "Afghanistan", "India","Western US","Eastern Europe","Iceland","Japan","Madagascar","Irkutsk"]:
+                              "Afghanistan", "India","Eastern Europe","Iceland","Japan","Madagascar","Irkutsk"]:
             carte=Carte(territoires[i], armes[0])  # Associe chaque territoire à une arme de manière cyclique
         elif territoires[i] in [ "Peru","Central America","China","Congo","Northern Europe","Southern Europe","Great Britain","Greenland",
                                 "Indonesia","Kamchatka","Ontario","Ural","Yakutsk"]:
@@ -51,22 +50,22 @@ def créer_cartes():
 
 
 class Territoire:
-    def __init__(self, nom):
+    def __init__(self, nom, propriétaire=None, nombre_armées=0):
         self.nom = nom
-        self.propriétaire = None
-        self.nombre_armées = 0
+        self.propriétaire = propriétaire
+        self.nombre_armées = nombre_armées
 
     def __repr__(self):
         return f"{self.nom} (Propriétaire: {self.propriétaire}, Armées: {self.nombre_armées})"
     
 class Joueur:
-    def __init__(self, nom):
+    def __init__(self, nom=None):
         self.nom = nom
-        self.territoires = []
+        self.Territoires = []
         self.cartes = []
 
     def __repr__(self):
-        return f"{self.nom} (Territoires: {len(self.territoires)}, Cartes: {len(self.cartes)})"
+        return f"{self.nom} (Territoires: {len(self.Territoires)}, Cartes: {len(self.cartes)})"
      
 class Continent:
     def __init__(self, nom, territoires):
@@ -83,3 +82,11 @@ Asia = Continent("Asia", ["Siberia", "Yakutsk", "Kamchatka", "Ural", "Irkutsk", 
 North_America = Continent("North America", ["Alaska", "Northwest Terr.", "Greenland", "Alberta", "Ontario", "Quebec", "Western US", "Eastern US", "Central America"])
 South_America = Continent("South America", ["Venezuela", "Peru", "Brazil", "Argentina"])
 Oceania = Continent("Oceania", ["Indonesia", "New Guinea", "Western Australia", "Eastern Australia"])
+
+class armée:
+    def __init__(self, nom, nombre):
+        self.nom = nom
+        self.nombre = nombre
+
+    def __repr__(self):
+        return f"Armée (Nom: {self.nom}, Nombre: {self.nombre})"
