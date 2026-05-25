@@ -47,6 +47,10 @@ class RiskGUI:
         self.phase = "RENFORCEMENT"
         self.armees_a_placer = 0
         self.territoire_attaquant = None
+        # Pendant le premier tour complet, personne n'attaque (placement initial)
+        self.premier_tour = True
+        self._nb_joueurs_total = len(noms_joueurs)
+        self.jeu_termine = False  # NOUVEAU : Drapeau pour bloquer le jeu à la fin
 
         # 3. Initialisation de la fenêtre graphique
         self.fig, self.ax, self.nodes_draw, self.labels_draw, self.titre_obj = carte2.initialiser_carte_interactive(self.partie)
@@ -59,20 +63,27 @@ class RiskGUI:
         self.rafraichir_affichage()
         plt.show()
 
-
-
     def get_joueur_actif(self):
         return self.partie.joueurs[self.joueur_actif_idx]
 
     def commencer_phase_renforcement(self):
+        if self.jeu_termine:
+            return
         self.phase = "RENFORCEMENT"
         self.territoire_attaquant = None
         joueur = self.get_joueur_actif()
         # Calcul officiel : nombre de territoires divisé par 3 (minimum 3 armées)
         self.armees_a_placer = max(3, len(joueur.Territoires) // 3)
-        print(f"\n[TOUR] C'est au tour de {joueur.nom}. {self.armees_a_placer} armées à placer.")
+        if self.premier_tour:
+            print(f"\n[TOUR INITIAL] C'est au tour de {joueur.nom}. {self.armees_a_placer} armées à placer. (Pas d'attaque ce tour)")
+        else:
+            print(f"\n[TOUR] C'est au tour de {joueur.nom}. {self.armees_a_placer} armées à placer.")
 
     def gerer_clic(self, event):
+        # Si le jeu est terminé, on ignore tous les clics
+        if self.jeu_termine:
+            return
+
         if event.xdata is None or event.ydata is None:
             return
 
@@ -110,8 +121,18 @@ class RiskGUI:
                 print(f"[RENFORT] +1 armée sur {territoire_clique.nom} (Reste : {self.armees_a_placer})")
                 
                 if self.armees_a_placer == 0:
-                    self.phase = "ATTAQUE"
-                    print("[PHASE] Renforcements terminés. Place à la phase d'ATTAQUE !")
+                    if self.premier_tour:
+                        # Pendant le premier tour : on passe au joueur suivant sans attaque
+                        print(f"[PHASE] Renforcements de {joueur.nom} terminés (tour initial, pas d'attaque).")
+                        prochain_idx = (self.joueur_actif_idx + 1) % len(self.partie.joueurs)
+                        if prochain_idx == 0:
+                            # Tous les joueurs ont placé leurs armées initiales : le vrai jeu commence
+                            self.premier_tour = False
+                            print("[INFO] Tour initial terminé ! Les attaques sont maintenant autorisées.")
+                        self.passer_au_joueur_suivant()
+                    else:
+                        self.phase = "ATTAQUE"
+                        print("[PHASE] Renforcements terminés. Place à la phase d'ATTAQUE !")
             else:
                 print("[ERREUR] Ce territoire ne vous appartient pas !")
 
@@ -150,7 +171,6 @@ class RiskGUI:
 
                 # Résolution automatique
                 try:
-                    
                     bilan = combat.combat(t_att, t_def, verbeux=True)
                     
                     # Répercuter les changements de listes après combat
@@ -161,7 +181,13 @@ class RiskGUI:
 
                 self.territoire_attaquant = None
                 
-                # Vérifier si le joueur possède encore des territoires capables de se battre
+                # --- NOUVEAU : VÉRIFICATION DE VICTOIRE ---
+                # Si le joueur actif possède désormais les 42 territoires, il gagne !
+                if len(joueur.Territoires) == 42:
+                    self.afficher_ecran_fin(joueur.nom)
+                    return
+
+                # Si le jeu continue, vérifier si le joueur possède encore des territoires capables de se battre
                 if not joueur_peut_encore_attaquer(joueur):
                     print(f"[INFO] {joueur.nom} n'a plus de territoires capables d'attaquer.")
                     self.passer_au_joueur_suivant()
@@ -169,10 +195,15 @@ class RiskGUI:
         self.rafraichir_affichage()
 
     def passer_au_joueur_suivant(self):
+        if self.jeu_termine:
+            return
         self.joueur_actif_idx = (self.joueur_actif_idx + 1) % len(self.partie.joueurs)
         self.commencer_phase_renforcement()
 
     def rafraichir_affichage(self):
+        if self.jeu_termine:
+            return
+            
         joueur = self.get_joueur_actif()
         
         # Création du titre dynamique en haut de la carte2
@@ -207,13 +238,46 @@ class RiskGUI:
                 self.nodes_draw.set_edgecolors(edge_colors)
                 self.nodes_draw.set_linewidths(line_widths)
 
+    def afficher_ecran_fin(self, nom_vainqueur):
+        """Affiche un panneau de victoire centré sur la carte et gèle les contrôles."""
+        self.jeu_termine = True
+        
+        # On met d'abord à jour une dernière fois la carte pour voir la couleur finale de la conquête
+        carte2.mettre_a_jour_carte(self.partie, self.nodes_draw, self.labels_draw, self.titre_obj, "PARTIE TERMINÉE")
+        self.nodes_draw.set_edgecolors(['black'] * len(self.partie.territoires))
+        self.nodes_draw.set_linewidths([1.5] * len(self.partie.territoires))
+
+        # Texte stylisé au centre du graphique (coordonnées moyennes de la carte x=9.5, y=5)
+        texte_victoire = (
+            "🏆 VICTOIRE 🏆\n\n"
+            f"Félicitations {nom_vainqueur} !\n"
+            "Vous avez conquis le monde.\n\n"
+            "(Fermez la fenêtre pour quitter)"
+        )
+        
+        self.ax.text(
+            9.5, 5.0, 
+            texte_victoire, 
+            fontsize=20, 
+            fontweight='bold', 
+            color='white',
+            ha='center', 
+            va='center',
+            bbox=dict(facecolor='#222222', alpha=0.9, boxstyle='round,pad=1.5', edgecolor='#FFD700', linewidth=3)
+        )
+        
+        print("\n" + "="*50)
+        print(f"🎉 {nom_vainqueur.upper()} A GAGNÉ LA PARTIE DE RISK ! 🎉")
+        print("="*50 + "\n")
+        
+        self.fig.canvas.draw_idle()
+
+
 # --- FONCTIONS REQUISES POUR HARMONISER TES OBJETS ---
-
-
 
 def t_appartient_au_joueur(territoire, joueur):
     if t_has_no_owner(territoire): return False
-    nom_proprio = territoire.propriétaire.nom if hasattr(territoire.propriétaire, 'nom') else territoire.propriétaire
+    nom_proprio = territory_owner_name = territoire.propriétaire.nom if hasattr(territoire.propriétaire, 'nom') else territoire.propriétaire
     return nom_proprio == joueur.nom
 
 def t_has_no_owner(t):

@@ -73,9 +73,10 @@ def initialiser_carte_interactive(partie):
         "● Clic Gauche :\n Sélection / Action\n"
         "● Clic Droit :\n Annuler / Fin Tour\n\n"
         "COULEURS\n"
-        "🔴 Alice\n🔵 Bob\n🟢 Charlie"
+        "🔴 Joueur 1\n🔵 Joueur 2\n🟢 Joueur 3"
     )
-    plt.text(1.02, 0.5, legend_text, transform=ax.transAxes, fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
+    legende_obj = plt.text(1.02, 0.5, legend_text, transform=ax.transAxes, fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
+    legende_obj._risk_legend = True  # Marqueur pour pouvoir retrouver cet objet dans mettre_a_jour_carte
     
     ax.axis('off')
     titre_obj = fig.suptitle("RISK", fontsize=14, fontweight='bold', y=0.95)
@@ -117,7 +118,8 @@ def __init__(self):
         self.partie.territoires_dict = {t.nom: t for t in self.partie.territoires}
 def mettre_a_jour_carte(partie, nodes_draw, labels_draw, titre_obj, text_titre):
     """Met à jour graphiquement les couleurs des joueurs et les textes des armées."""
-    G_nodes = list(partie.territoires_dict.keys())
+    # IMPORTANT : on itère dans l'ordre de `pos`, qui est l'ordre utilisé par NetworkX
+    # pour dessiner les nœuds. Utiliser un ordre différent décalerait les couleurs.
     couleurs_noeuds = []
     
     # Palette de couleurs génériques pour gérer jusqu'à 6 joueurs
@@ -126,26 +128,48 @@ def mettre_a_jour_carte(partie, nodes_draw, labels_draw, titre_obj, text_titre):
     # Création d'un dictionnaire { "Nom_du_joueur": "Couleur" } dynamiquement
     couleurs_attribuees = {}
     for idx, joueur in enumerate(partie.joueurs):
-        # On pioche dans la palette (avec un modulo au cas où il y aurait plus de joueurs que de couleurs)
         couleurs_attribuees[joueur.nom] = palette[idx % len(palette)]
 
-    for nom_t in G_nodes:
-        territoire = partie.territoires_dict[nom_t]
-        
+    # On parcourt les territoires dans l'ordre de `pos` (ordre de dessin NetworkX)
+    for nom_t in pos.keys():
+        territoire = partie.territoires_dict.get(nom_t)
+        if territoire is None:
+            couleurs_noeuds.append("#FFFFFF")
+            continue
+
         proprio_nom = territoire.propriétaire.nom if hasattr(territoire.propriétaire, 'nom') else territoire.propriétaire
         
         # Attribution de la couleur dynamique
         if proprio_nom in couleurs_attribuees:
             couleurs_noeuds.append(couleurs_attribuees[proprio_nom])
         else:
-            couleurs_noeuds.append("#FFFFFF") # Neutre / Blanc
+            couleurs_noeuds.append("#FFFFFF")  # Neutre / Blanc
 
         # Mise à jour du texte au centre du cercle
-        labels_draw[nom_t].set_text(str(territoire.nombre_armées))
+        if nom_t in labels_draw:
+            labels_draw[nom_t].set_text(str(territoire.nombre_armées))
 
-    # Application globale des couleurs
+    # Application globale des couleurs (dans l'ordre de pos)
     nodes_draw.set_facecolors(couleurs_noeuds)
     titre_obj.set_text(text_titre)
+
+    # Mise à jour de la légende avec les vrais noms et couleurs des joueurs
+    # (on stocke la référence à l'objet texte légende dans nodes_draw.axes)
+    ax = nodes_draw.axes
+    for child in ax.get_children():
+        if hasattr(child, '_risk_legend') and child._risk_legend:
+            couleurs_emoji = ["R", "B", "Ve", "J", "O", "Vi"]
+            lignes_joueurs = "\n".join(
+                f"{couleurs_emoji[i % len(couleurs_emoji)]} {j.nom}"
+                for i, j in enumerate(partie.joueurs)
+            )
+            child.set_text(
+                "CONTRÔLES\n\n"
+                "● Clic Gauche :\n Sélection / Action\n"
+                "● Clic Droit :\n Annuler / Fin Tour\n\n"
+                "COULEURS\n" + lignes_joueurs
+            )
+            break
 def dessiner_carte_risk_complete():
     """Conserve ta fonction d'origine intacte si tu lances carte.py directement."""
     print("Affichage de la carte de démonstration...")
